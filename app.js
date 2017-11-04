@@ -4,7 +4,10 @@ const path = require("path");
 const mongoose = require("mongoose");
 let Article = require("./Models/Article");
 mongoose.connect("mongodb://localhost/Practice");
+const expressValidator = require("express-validator");
 let db = mongoose.connection;
+const flash = require("connect-flash");
+const session = require("express-session");
 const bodyParser = require("body-parser");
 
 app.set("views", path.join(__dirname, "views"));
@@ -19,6 +22,35 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use(bodyParser.json())
 
+app.use(session({
+    secret: 'keyboard cat',
+    resave: true,
+    saveUninitialized: true
+}));
+
+app.use(require('connect-flash')());
+app.use(function (req, res, next) {
+    res.locals.messages = require('express-messages')(req, res);
+    next();
+});
+
+app.use(expressValidator({
+    errorFormatter: function (param, msg, value) {
+        var namespace = param.split('.')
+            , root = namespace.shift()
+            , formParam = root;
+
+        while (namespace.length) {
+            formParam += '[' + namespace.shift() + ']';
+        }
+        return {
+            param: formParam,
+            msg: msg,
+            value: value
+        };
+    }
+}));
+
 app.get("/", function (req, res) {
     Article.find({}, function (err, articles) {
         if (err) {
@@ -32,75 +64,8 @@ app.get("/", function (req, res) {
     });
 });
 
-app.get("/article/:id", function (req, res) {
-    Article.findById(req.params.id, function (err, article) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        res.render("article", {
-            article: article
-        });
-    });
-});
-
-app.get("/articles/add", function (req, res) {
-    res.render("add_article", {
-        title: "Add Article"
-    });
-});
-
-app.post("/articles/add", function (req, res) {
-    let new_Articles = new Article();
-    new_Articles.title = req.body.title;
-    new_Articles.author = req.body.author;
-    new_Articles.body = req.body.body;
-    new_Articles.save(function (err) {
-        if (err) {
-            console.log("error !!!!! ", err);
-            return;
-        }
-        res.redirect("/");
-    });
-});
-
-app.get("/articles/edit/:id", function (req, res) {
-    Article.findById(req.params.id, function (err, article) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        res.render("article_edit", {
-            article: article
-        });
-    });
-});
-
-app.post("/articles/edit/:id", function (req, res) {
-    let article = {};
-    article.title = req.body.title;
-    article.author = req.body.author;
-    article.body = req.body.body;
-    let query = { _id: req.params.id };
-    Article.update(query, article, function (err) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-        res.redirect("/");
-    });
-});
-
-app.delete("/article/:id", function(req, res){
-    let query = {_id: req.params.id};
-    Article.remove(query, function(err){
-        if(err){
-            console.log(err);
-            return;
-        }
-        res.send("success");
-    });
-});
+let articles = require("./routes/articles");
+app.use("/articles", articles);
 
 app.listen(19000, function () {
     console.log("Server is hited!");
