@@ -13,7 +13,7 @@ Router.post("/register", function (req, res) {
     const username = req.body.username;
     const password = req.body.password;
     const confirm_Password = req.body.confirmpassword;
-    console.log("!!!!!!!!!!!!!!!!!!!!!!   ", name, email, username, password, confirm_Password);
+
     req.checkBody("name", "Name is required").notEmpty();
     req.checkBody("email", "Email is required").notEmpty();
     req.checkBody("username", "UserName is required").notEmpty();
@@ -23,7 +23,10 @@ Router.post("/register", function (req, res) {
     let errors = req.validationErrors();
 
     if (errors) {
-        console.log("1", errors);
+        console.log(errors);
+        res.render("register", {
+            errors: errors
+        });
     } else {
         bcrypt.genSalt(10, function (err, salt) {
             bcrypt.hash(password, salt, function (err, hash) {
@@ -39,11 +42,15 @@ Router.post("/register", function (req, res) {
                         return;
                     }
                     req.flash("success", "You are now registered and can login");
-                    res.redirect("/");
+                    res.redirect("/users/login");
                 });
             });
         });
     }
 });
+
+Router.get("/login", function (req, res) {
+    res.render("login");
+})
 
 module.exports = Router;
