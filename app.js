@@ -65,7 +65,9 @@ app.get("/", function (req, res) {
 });
 
 let articles = require("./routes/articles");
+let users = require("./routes/users");
 app.use("/articles", articles);
+app.use("/users", users);
 
 app.listen(19000, function () {
     console.log("Server is hited!");
