@@ -1,5 +1,20 @@
+// Importing Modules
 const express = require("express");
 const User = require("../models/user_model");
+const JWT = require("jsonwebtoken");
+const { secret } = require("../configurations/index");
+
+// Token Maker
+signToken = user => {
+    return JWT.sign({
+        iss: "auth",
+        sub: user.id,
+        iat: new Date().getTime(),
+        exp: new Date().setDate(new Date().getDate() + 1)
+    }, secret);
+}
+
+// Exporting
 module.exports = {
     signUp: async (req, res, next) => {
         const { email, password } = req.value.body;
@@ -10,12 +25,13 @@ module.exports = {
         }
         let newUser = new User({ email, password });
         newUser.save();
-    res.status(200).json({ user: "created" });
+        const token = signToken(newUser);
+        res.status(200).json({ token });
     },
     signIn: async (req, res) => {
 
     },
     secret: async (req, res) => {
-
+        res.json({ secret: "testing" });
     }
 }
