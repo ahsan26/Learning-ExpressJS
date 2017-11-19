@@ -1,4 +1,5 @@
 const passport = require("passport");
+
 const JWTSTRATEGY = require("passport-jwt").Strategy;
 const { ExtractJwt } = require("passport-jwt");
 const { secret } = require("./configurations/index");
@@ -25,4 +26,7 @@ passport.use(new LocalStrategy({
 }, async (email, password, done) => {
     const user = await User.findOne({ email });
     if (!user) { return done(null, false) };
+    let isMatch = user.isValidPassword(password);
+    if (!isMatch) { return done(null, false) };
+    done(null, user);
 }));

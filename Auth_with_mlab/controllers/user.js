@@ -29,7 +29,8 @@ module.exports = {
         res.status(200).json({ token });
     },
     signIn: async (req, res) => {
-
+        const token = signToken(req.user);
+        return res.status(200).json({ token });
     },
     secret: async (req, res) => {
         res.json({ secret: "testing" });

@@ -10,8 +10,8 @@ Router.get("/", function (req, res) {
     res.send("Welcome");
 });
 Router.route("/signUp").post(validateBody(schemas.authSchema), UserControls.signUp);
-Router.route("/signIn").post(UserControls.signIn);
-Router.route("/secret").get(passport.authenticate("jwt", {session: false}),UserControls.secret);
+Router.route("/signIn").post(validateBody(schemas.authSchema), passport.authenticate("local", { session: false }), UserControls.signIn);
+Router.route("/secret").get(passport.authenticate("jwt", { session: false }), UserControls.secret);
 
 // Exporting our Routes
 module.exports = Router;
